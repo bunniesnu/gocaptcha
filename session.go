@@ -36,20 +36,28 @@ func (s *Session) sendRequest(method, endpoint, params, data string) (*http.Resp
     fullURL := fmt.Sprintf(BaseURL, endpoint)
     var req *http.Request
     var err error
+    paramValues, err := url.ParseQuery(params)
+    if err != nil {
+        return nil, fmt.Errorf("invalid params: %w", err)
+    }
     if method == http.MethodPost {
         req, err = http.NewRequest(http.MethodPost, fullURL, strings.NewReader(data))
+        if err != nil {
+            return nil, err
+        }
         req.Header.Set("Content-Type", ContentType)
-        q := req.URL.Query()
-        q.Set("k", params)
-        req.URL.RawQuery = q.Encode()
     } else {
         req, err = http.NewRequest(http.MethodGet, fullURL, nil)
-        q := req.URL.Query()
-        q.Set("params", params)
-        req.URL.RawQuery = q.Encode()
+        if err != nil {
+            return nil, err
+        }
     }
-    if err != nil {
-        return nil, err
+    q := req.URL.Query()
+    for key, values := range paramValues {
+        for _, value := range values {
+            q.Add(key, value)
+        }
     }
+    req.URL.RawQuery = q.Encode()
     return s.client.Do(req)
 }
