@@ -1,4 +1,3 @@
-// file: session_test.go
 package gocaptcha
 
 import (
@@ -9,6 +8,27 @@ import (
 	"testing"
 	"time"
 )
+
+func TestErrorConstants(t *testing.T) {
+    if ErrTokenNotFound == nil || ErrResponseNotFound == nil {
+        t.Error("Error constants should be initialized")
+    }
+}
+
+func TestParseURL(t *testing.T) {
+    anchor := "api2/anchor?param1=foo&param2=bar"
+    endpoint, params, err := parseURL(anchor)
+    if err != nil {
+        t.Fatalf("parseURL error: %v", err)
+    }
+    if endpoint != "api2" {
+        t.Errorf("expected endpoint 'api2', got %s", endpoint)
+    }
+    if params != "param1=foo&param2=bar" {
+        t.Errorf("unexpected params: %s", params)
+    }
+}
+
 
 // rewriteTransport is a RoundTripper that sends every request
 // to tsURL, preserving the original path and query.
